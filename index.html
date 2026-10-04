@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<meta name="description" content="Stormo — AI agent swarm simulator for forecasting reactions to news, products and decisions. Mobile-first.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Stormo">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Stormo</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--acc:#0ea5e9;--acc2:#6366f1;--pos:#16a34a;--neg:#dc2626;--neu:#94a3b8;--chip:#eef2ff;--shadow:0 1px 2px rgba(15,23,42,.06)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0b1020;--card:#131a2e;--ink:#e6eaf5;--muted:#93a0bd;--line:#232c47;--chip:#1c2545;--shadow:none}}
+:root[data-theme="dark"]{--bg:#0b1020;--card:#131a2e;--ink:#e6eaf5;--muted:#93a0bd;--line:#232c47;--chip:#1c2545;--shadow:none}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{overflow-x:hidden}
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:var(--bg);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px}
+.brand img{width:26px;height:26px}
+.topr{display:flex;align-items:center;gap:8px;min-width:0}
+.status{font-size:12px;color:var(--muted);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.langs{display:flex;background:var(--chip);border-radius:99px;padding:2px;flex:0 0 auto}
+.langs button{border:0;background:none;color:var(--muted);font:700 11px system-ui,sans-serif;padding:4px 7px;border-radius:99px;cursor:pointer}
+.langs button.on{background:var(--card);color:var(--ink)}
+main{padding:12px 16px calc(90px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
+.view{display:none}.view.active{display:block}
+h2{font-size:20px;margin:6px 0 12px}
+h3{font-size:15px;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 6px}
+label:first-child{margin-top:0}
+input,textarea,select{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{min-height:130px;resize:vertical}
+input[type=range]{padding:0;border:0;background:none;accent-color:var(--acc)}
+.chk{display:flex;gap:10px;align-items:center;color:var(--ink);font-size:14px}
+.chk input{width:22px;height:22px;flex:0 0 22px;accent-color:var(--acc)}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.btn{appearance:none;border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:700;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;width:100%;cursor:pointer}
+.btn.sec{background:var(--chip);color:var(--ink)}
+.btn.small{padding:8px 12px;font-size:13px;width:auto}
+.btn:disabled{opacity:.45}
+.row{display:flex;gap:8px;margin-top:10px}.row>*{flex:1}
+.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:6}
+.tabs button{flex:1;min-width:0;border:0;background:none;color:var(--muted);font:600 11px system-ui,sans-serif;padding:8px 0 10px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tabs button span{font-size:20px;line-height:1}
+.tabs button.on{color:var(--acc)}
+.prog{height:6px;background:var(--chip);border-radius:9px;overflow:hidden;margin:8px 0}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .4s}
+.post{display:flex;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.post:first-child{border-top:0}
+.post.reply{margin-left:28px;padding-top:8px;border-top:0}
+.av{flex:0 0 34px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px}
+.post.reply .av{flex-basis:26px;width:26px;height:26px;font-size:11px}
+.pbody{min-width:0;flex:1}
+.pmeta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 8px}
+.pmeta b{color:var(--ink);font-size:13px}
+.ptext{margin-top:3px;word-wrap:break-word}
+.pfoot{font-size:12px;color:var(--muted);margin-top:4px;display:flex;gap:12px;align-items:center}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%}
+.event{background:linear-gradient(135deg,rgba(14,165,233,.12),rgba(99,102,241,.12));border:1px dashed var(--acc);border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px}
+.agent{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+.agent:first-child{border-top:0}
+.agent .info{flex:1;min-width:0}
+.agent .info small{color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stance{position:relative;height:6px;background:var(--chip);border-radius:9px;margin-top:6px}
+.stance i{position:absolute;top:0;height:100%;border-radius:9px}
+.stance:after{content:"";position:absolute;left:50%;top:-2px;width:1px;height:10px;background:var(--muted)}
+.chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--chip);color:var(--muted)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.bars{display:flex;height:12px;border-radius:9px;overflow:hidden;margin-top:10px;background:var(--chip)}
+.empty{color:var(--muted);text-align:center;padding:24px 8px}
+.md h2{font-size:18px;margin:18px 0 8px}.md h3{font-size:16px;margin:14px 0 6px}.md h4{font-size:15px;margin:12px 0 6px}
+.md p{margin:8px 0}.md ul,.md ol{padding-left:20px;margin:8px 0}.md li{margin:4px 0}
+.hist{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.hist:first-child{border-top:0}
+.hist .t{flex:1;min-width:0;cursor:pointer}
+.hist .t small{display:block;color:var(--muted)}
+.x{border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:none;align-items:flex-end;justify-content:center}
+.sheet.open{display:flex}
+.sheet .in{background:var(--card);width:100%;max-width:720px;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 12px}
+.bubble{padding:10px 12px;border-radius:14px;margin:8px 0;max-width:88%}
+.bubble.q{background:var(--chip);margin-left:auto}
+.bubble.a{background:var(--bg);border:1px solid var(--line)}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(80px + env(safe-area-inset-bottom));background:#0f172a;color:#fff;padding:12px 14px;border-radius:12px;font-size:14px;z-index:30;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;max-width:688px;margin:0 auto}
+.toast.show{opacity:1;transform:none}
+.val{float:right;color:var(--ink);font-weight:700}
+svg text{fill:var(--muted);font-size:10px;font-family:system-ui,sans-serif}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><img src="icon.svg" alt="">Stormo</div>
+  <div class="topr">
+    <div id="status" class="status"></div>
+    <div class="langs" id="langs"><button data-l="it">IT</button><button data-l="en">EN</button><button data-l="ru">RU</button></div>
+  </div>
+</header>
+
+<main>
+<!-- SCENARIO -->
+<section id="v-scenario" class="view active">
+  <h2 data-i18n="new_forecast"></h2>
+  <div class="card">
+    <label for="f-title" data-i18n="title"></label>
+    <input id="f-title" data-i18n-ph="title_ph">
+    <label for="f-seed" data-i18n="seed"></label>
+    <textarea id="f-seed" data-i18n-ph="seed_ph"></textarea>
+    <div class="row">
+      <button class="btn sec small" id="b-file" data-i18n="load_txt"></button>
+      <button class="btn sec small" id="b-example" data-i18n="example"></button>
+    </div>
+    <input type="file" id="f-file" accept=".txt,.md,.csv,text/plain" hidden>
+    <label for="f-question" data-i18n="question"></label>
+    <input id="f-question" data-i18n-ph="question_ph">
+    <label for="f-platform" data-i18n="platform"></label>
+    <select id="f-platform"></select>
+    <label for="f-agents"><span data-i18n="agents"></span> <span class="val" id="o-agents">12</span></label>
+    <input type="range" id="f-agents" min="4" max="40" value="12">
+    <label for="f-rounds"><span data-i18n="rounds"></span> <span class="val" id="o-rounds">4</span></label>
+    <input type="range" id="f-rounds" min="1" max="8" value="4">
+    <div class="hint" id="o-cost"></div>
+    <div class="row"><button class="btn" id="b-start" data-i18n="start"></button></div>
+  </div>
+  <div class="card">
+    <h3 data-i18n="saved"></h3>
+    <div id="history"></div>
+  </div>
+</section>
+
+<!-- SIMULAZIONE -->
+<section id="v-sim" class="view">
+  <div class="card">
+    <h3 id="s-title"></h3>
+    <div class="prog"><i id="s-prog"></i></div>
+    <div class="hint" id="s-step"></div>
+    <div class="row">
+      <button class="btn sec" id="b-pause" disabled></button>
+      <button class="btn sec" id="b-more" disabled data-i18n="more"></button>
+    </div>
+  </div>
+  <div class="card">
+    <h3 data-i18n="inject_title"></h3>
+    <textarea id="f-event" style="min-height:70px" data-i18n-ph="event_ph"></textarea>
+    <div class="row"><button class="btn sec" id="b-event" data-i18n="inject_btn"></button></div>
+    <div class="hint" data-i18n="inject_hint"></div>
+  </div>
+  <div class="card">
+    <h3 data-i18n="chart_title"></h3>
+    <div id="chart"></div>
+    <div id="dist"></div>
+  </div>
+  <div class="card">
+    <h3 data-i18n="feed"></h3>
+    <div id="feed"></div>
+  </div>
+</section>
+
+<!-- AGENTI -->
+<section id="v-agents" class="view">
+  <h2 data-i18n="agents_title"></h2>
+  <div class="hint" style="margin:-6px 0 10px" data-i18n="agents_hint"></div>
+  <div class="card" id="agents"></div>
+</section>
+
+<!-- REPORT -->
+<section id="v-report" class="view">
+  <h2 data-i18n="report_title"></h2>
+  <div class="card md" id="report"></div>
+  <div class="row"><button class="btn" id="b-report" data-i18n="gen_report"></button></div>
+  <div class="row">
+    <button class="btn sec" id="b-share" data-i18n="share"></button>
+    <button class="btn sec" id="b-md">⬇ .md</button>
+    <button class="btn sec" id="b-json">⬇ .json</button>
+  </div>
+</section>
+
+<!-- IMPOSTAZIONI -->
+<section id="v-settings" class="view">
+  <h2 data-i18n="settings_title"></h2>
+  <div class="card">
+    <label for="c-ui" data-i18n="ui_lang"></label>
+    <select id="c-ui"><option value="it">Italiano</option><option value="en">English</option><option value="ru">Русский</option></select>
+    <label for="c-provider" data-i18n="engine"></label>
+    <select id="c-provider"></select>
+    <label for="c-base" data-i18n="api_url"></label>
+    <input id="c-base" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label for="c-model" data-i18n="model"></label>
+    <input id="c-model" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label for="c-key" data-i18n="api_key"></label>
+    <input id="c-key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-…">
+    <div class="hint" data-i18n="key_hint"></div>
+    <label class="chk" style="margin-top:14px"><input type="checkbox" id="c-proxy"><span data-i18n="proxy"></span></label>
+    <div class="hint" id="o-proxy"></div>
+    <label for="c-lang" data-i18n="sim_lang"></label>
+    <select id="c-lang"></select>
+    <label for="c-theme" data-i18n="theme"></label>
+    <select id="c-theme"><option value="" data-i18n="th_auto"></option><option value="light" data-i18n="th_light"></option><option value="dark" data-i18n="th_dark"></option></select>
+    <div class="row">
+      <button class="btn sec" id="b-test" data-i18n="test"></button>
+      <button class="btn" id="b-save" data-i18n="save"></button>
+    </div>
+  </div>
+  <div class="card">
+    <h3 data-i18n="how_title"></h3>
+    <div class="hint" style="font-size:13px" data-i18n-html="how"></div>
+  </div>
+</section>
+</main>
+
+<nav class="tabs">
+  <button data-v="scenario" class="on"><span>📝</span><b data-i18n="tab_scenario" style="font-weight:600"></b></button>
+  <button data-v="sim"><span>🌊</span><b data-i18n="tab_sim" style="font-weight:600"></b></button>
+  <button data-v="agents"><span>👥</span><b data-i18n="tab_agents" style="font-weight:600"></b></button>
+  <button data-v="report"><span>📊</span><b data-i18n="tab_report" style="font-weight:600"></b></button>
+  <button data-v="settings"><span>⚙️</span><b data-i18n="tab_settings" style="font-weight:600"></b></button>
+</nav>
+
+<div class="sheet" id="sheet"><div class="in"><div class="grab"></div><div id="sheet-body"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* =================== TRADUZIONI / TRANSLATIONS / ПЕРЕВОДЫ =================== */
+const I18N = {
+it: {
+  tab_scenario:"Scenario", tab_sim:"Simula", tab_agents:"Agenti", tab_report:"Report", tab_settings:"Impost.", ready:"Pronto",
+  new_forecast:"Nuova previsione", title:"Titolo", title_ph:"Es. Lancio del nuovo servizio", seed:"Materiale di partenza",
+  seed_ph:"Incolla una notizia, un comunicato, un post, una bozza di regolamento, la descrizione di un prodotto…",
+  load_txt:"📄 Carica .txt", example:"✨ Esempio", question:"Cosa vuoi prevedere?", question_ph:"Es. Come reagirà il pubblico nella prima settimana?",
+  default_q:"Come reagiranno le persone e come evolverà l'opinione?", platform:"Dove si discute", agents:"Agenti", rounds:"Round di simulazione",
+  start:"▶ Avvia simulazione", saved:"Simulazioni salvate", no_saved:"Nessuna simulazione salvata.", sim_default:"Simulazione",
+  p_x:"Social tipo X/Twitter", p_reddit:"Forum tipo Reddit", p_local:"Gruppo Facebook / WhatsApp locale", p_news:"Commenti a un articolo di giornale", p_market:"Mercato e investitori", p_reviews:"Clienti e recensioni",
+  no_sim:"Nessuna simulazione", create_first:"Crea uno scenario per iniziare.", pause:"⏸ Pausa", resume:"▶ Riprendi", more:"➕ Altro round",
+  inject_title:"Inietta un evento", event_ph:"Es. Un influencer famoso critica l'iniziativa. Il prezzo scende del 20%.", inject_btn:"⚡ Inietta nel prossimo round",
+  inject_hint:"Gli agenti reagiranno all'evento nel round successivo: la «vista dall'alto» per testare scenari alternativi.",
+  chart_title:"Opinione media nel tempo", chart_empty:"Il grafico apparirà durante la simulazione.", feed:"Feed", feed_empty:"Ancora nessun post.", feed_wait:"Gli agenti stanno leggendo lo scenario…",
+  fav:"Favorevoli", und:"Indecisi", con:"Contrari", event_round:"Evento (round {r})", pos:"positivo", neg:"negativo", neu:"neutro", start_lbl:"in",
+  agents_title:"Agenti", agents_hint:"Tocca un agente per vedere cosa ha scritto e intervistarlo.", no_agents:"Nessun agente ancora.", years:"{n} anni", influence:"influenza {n}",
+  character:"Carattere", cares:"Gli importa", opinion:"Opinione", wrote:"Cosa ha scritto ({n})", only_likes:"Solo like o silenzio.", interview:"Intervista", ask_ph:"Perché la pensi così?", ask:"Chiedi", close:"Chiudi",
+  report_title:"Report di previsione", gen_report:"🧠 Genera report", share:"↗ Condividi", report_wait:"Il report viene generato a fine simulazione, oppure toccalo qui sotto.", report_none:"Avvia una simulazione per ottenere il report.",
+  writing:"L'analista sta scrivendo…", question_lbl:"Domanda", generated:"Generato con Stormo · {a} agenti · {r} round",
+  settings_title:"Impostazioni", ui_lang:"Lingua dell'app", engine:"Motore IA", api_url:"Indirizzo API", model:"Modello", api_key:"Chiave API",
+  key_hint:"La chiave resta solo su questo dispositivo: le chiamate partono dal browser (o dal tuo server locale) direttamente verso il fornitore.",
+  proxy:"Usa il server locale come proxy", proxy_on:"Server locale rilevato ✓ Evita i blocchi CORS di alcuni fornitori.", proxy_off:"Disponibile solo se apri Stormo con server.py (PC o Termux).",
+  sim_lang:"Lingua della simulazione", theme:"Tema", th_auto:"Automatico", th_light:"Chiaro", th_dark:"Scuro", test:"🔌 Prova connessione", save:"Salva", how_title:"Come funziona",
+  how:"1. L'IA legge il materiale e crea persone con età, lavoro, carattere e opinione iniziale.<br>2. A ogni round ogni agente legge il feed e decide se postare, rispondere, mettere like o restare in silenzio, e può cambiare idea.<br>3. Alla fine un analista IA studia la conversazione e scrive la previsione.<br><br>Modalità Demo: funziona senza chiave con un motore statistico semplice, utile solo per provare l'app.",
+  creating:"Creo gli agenti…", round_x:"Round {r} di {n}: gli agenti stanno reagendo…", writing_report:"Scrivo il report di previsione…", done_msg:"Simulazione completata. Il report è pronto.",
+  paused_msg:"In pausa.", error_msg:"Errore: {e}", pausing:"Metto in pausa dopo il round in corso…", need_key:"Inserisci la chiave API in Impostazioni (oppure usa la Demo).",
+  conn_fail:"Connessione non riuscita (rete o CORS). Controlla l'indirizzo API o attiva il proxy locale.", bad_json:"Risposta IA non in formato JSON", bad_agents:"Formato agenti non valido",
+  already:"C'è già una simulazione in corso", seed_short:"Scrivi o incolla un materiale di partenza più lungo", need_sim:"Prima avvia una simulazione",
+  ev_queued:"Evento in coda per il prossimo round", ev_new:"Evento iniettato: parte un nuovo round", report_ready:"Report pronto ✓", describe_ev:"Descrivi l'evento",
+  loaded:"Testo caricato", saved_ok:"Impostazioni salvate", trying:"Provo…", conn_ok:"Connessione riuscita ✓", demo_nc:"La Demo non usa connessioni",
+  no_report:"Nessun report da condividere", copied:"Report copiato", del_q:"Eliminare questa simulazione?", wait_run:"Attendi la fine della simulazione in corso",
+  est_demo:"Modalità Demo: nessuna chiamata IA.", est:"Circa {c} chiamate all'IA ({p}).", line_done:"Completata · {a} agenti · {r} round · {p} post", line_round:"Round {r}/{n} · {s}",
+  batch_fail:"Round {r}: {f} gruppo/i di agenti non hanno risposto", st_new:"nuova", st_running:"in corso", st_paused:"in pausa", st_done:"completata", st_error:"errore",
+  pv_demo:"Demo (senza chiave)", pv_groq:"Groq (piano gratuito)", pv_custom:"Personalizzato (compatibile OpenAI / Ollama)",
+  d_banner:"⚠️ Modalità demo: risultati generati con un motore statistico semplice, non da un'IA. Collega una chiave API in Impostazioni per una previsione reale.",
+  d_sum_h:"In sintesi", d_sum:"L'opinione media è passata da {a} a {b}. Alla fine {f} agenti su {n} sono favorevoli e {c} contrari.", d_fc_h:"Previsione",
+  d_fc:"Probabilità di un'accoglienza complessivamente positiva: **{p}%** (fiducia bassa, demo).", d_gr_h:"Fazioni e gruppi", d_top_h:"Contenuti più influenti", d_todo_h:"Cosa fare",
+  d_todo1:"Collega un motore IA e ripeti la simulazione con più agenti.", d_todo2:"Usa «Inietta un evento» per testare scenari alternativi.", d_none:"Nessuno", agents_n:"agenti",
+  d_iv_pos:"Guardi, su {k} sono abbastanza convinto che sia una cosa buona.", d_iv_neg:"Io su {k} resto molto critico, e non ho cambiato idea.", d_iv_neu:"Su {k} ancora non ho un'opinione netta, dipende da come andrà.",
+  d_iv_tail:"Da {r} vedo le cose in modo concreto. A me importa: {m}. (Risposta demo: collega un'IA per interviste vere.)",
+  ex_title:"Supermercato senza casse",
+  ex_seed:"Una grande catena di supermercati annuncia che dal prossimo mese, in 40 punti vendita del Nord Italia, elimina le casse tradizionali: resteranno solo casse automatiche e pagamento con app. L'azienda dice che i prezzi scenderanno del 3% e che nessun dipendente sarà licenziato, ma verrà «ricollocato» in reparto. I sindacati parlano di 600 posti a rischio. Le associazioni degli anziani protestano.",
+  ex_q:"La clientela accetterà il cambiamento o ci sarà un boicottaggio nelle prime settimane?"
+},
+en: {
+  tab_scenario:"Scenario", tab_sim:"Simulate", tab_agents:"Agents", tab_report:"Report", tab_settings:"Settings", ready:"Ready",
+  new_forecast:"New forecast", title:"Title", title_ph:"E.g. New service launch", seed:"Source material",
+  seed_ph:"Paste a news story, press release, post, draft regulation, product description…",
+  load_txt:"📄 Load .txt", example:"✨ Example", question:"What do you want to predict?", question_ph:"E.g. How will the public react in the first week?",
+  default_q:"How will people react and how will opinion evolve?", platform:"Where it's discussed", agents:"Agents", rounds:"Simulation rounds",
+  start:"▶ Start simulation", saved:"Saved simulations", no_saved:"No saved simulations.", sim_default:"Simulation",
+  p_x:"X/Twitter-style social network", p_reddit:"Reddit-style forum", p_local:"Local Facebook / WhatsApp group", p_news:"News article comments", p_market:"Market and investors", p_reviews:"Customers and reviews",
+  no_sim:"No simulation", create_first:"Create a scenario to get started.", pause:"⏸ Pause", resume:"▶ Resume", more:"➕ One more round",
+  inject_title:"Inject an event", event_ph:"E.g. A famous influencer criticises the plan. The price drops by 20%.", inject_btn:"⚡ Inject into next round",
+  inject_hint:"Agents will react to the event in the next round: a «god's-eye view» for testing alternative scenarios.",
+  chart_title:"Average opinion over time", chart_empty:"The chart appears during the simulation.", feed:"Feed", feed_empty:"No posts yet.", feed_wait:"Agents are reading the scenario…",
+  fav:"For", und:"Undecided", con:"Against", event_round:"Event (round {r})", pos:"positive", neg:"negative", neu:"neutral", start_lbl:"st",
+  agents_title:"Agents", agents_hint:"Tap an agent to see what they wrote and interview them.", no_agents:"No agents yet.", years:"{n} y/o", influence:"influence {n}",
+  character:"Character", cares:"Cares about", opinion:"Opinion", wrote:"What they wrote ({n})", only_likes:"Only likes or silence.", interview:"Interview", ask_ph:"Why do you think that?", ask:"Ask", close:"Close",
+  report_title:"Forecast report", gen_report:"🧠 Generate report", share:"↗ Share", report_wait:"The report is generated at the end of the simulation, or tap below.", report_none:"Run a simulation to get the report.",
+  writing:"The analyst is writing…", question_lbl:"Question", generated:"Generated with Stormo · {a} agents · {r} rounds",
+  settings_title:"Settings", ui_lang:"App language", engine:"AI engine", api_url:"API address", model:"Model", api_key:"API key",
+  key_hint:"Your key stays on this device only: requests go from the browser (or your local server) straight to the provider.",
+  proxy:"Use the local server as a proxy", proxy_on:"Local server detected ✓ Avoids CORS blocks from some providers.", proxy_off:"Only available when you open Stormo with server.py (PC or Termux).",
+  sim_lang:"Simulation language", theme:"Theme", th_auto:"Automatic", th_light:"Light", th_dark:"Dark", test:"🔌 Test connection", save:"Save", how_title:"How it works",
+  how:"1. The AI reads the material and creates people with an age, job, character and starting opinion.<br>2. Each round, every agent reads the feed and decides to post, reply, like or stay silent, and can change their mind.<br>3. At the end an AI analyst studies the conversation and writes the forecast.<br><br>Demo mode: works without a key using a simple statistical engine, only for trying the app.",
+  creating:"Creating agents…", round_x:"Round {r} of {n}: agents are reacting…", writing_report:"Writing the forecast report…", done_msg:"Simulation complete. The report is ready.",
+  paused_msg:"Paused.", error_msg:"Error: {e}", pausing:"Pausing after the current round…", need_key:"Enter your API key in Settings (or use the Demo).",
+  conn_fail:"Connection failed (network or CORS). Check the API address or turn on the local proxy.", bad_json:"AI reply was not valid JSON", bad_agents:"Invalid agent format",
+  already:"A simulation is already running", seed_short:"Write or paste longer source material", need_sim:"Run a simulation first",
+  ev_queued:"Event queued for the next round", ev_new:"Event injected: a new round is starting", report_ready:"Report ready ✓", describe_ev:"Describe the event",
+  loaded:"Text loaded", saved_ok:"Settings saved", trying:"Testing…", conn_ok:"Connection works ✓", demo_nc:"The Demo doesn't use connections",
+  no_report:"No report to share", copied:"Report copied", del_q:"Delete this simulation?", wait_run:"Wait for the current simulation to finish",
+  est_demo:"Demo mode: no AI calls.", est:"About {c} AI calls ({p}).", line_done:"Done · {a} agents · {r} rounds · {p} posts", line_round:"Round {r}/{n} · {s}",
+  batch_fail:"Round {r}: {f} agent group(s) didn't respond", st_new:"new", st_running:"running", st_paused:"paused", st_done:"done", st_error:"error",
+  pv_demo:"Demo (no key)", pv_groq:"Groq (free tier)", pv_custom:"Custom (OpenAI-compatible / Ollama)",
+  d_banner:"⚠️ Demo mode: results come from a simple statistical engine, not an AI. Add an API key in Settings for a real forecast.",
+  d_sum_h:"Summary", d_sum:"Average opinion moved from {a} to {b}. At the end {f} of {n} agents are in favour and {c} against.", d_fc_h:"Forecast",
+  d_fc:"Probability of an overall positive reception: **{p}%** (low confidence, demo).", d_gr_h:"Factions and groups", d_top_h:"Most influential posts", d_todo_h:"What to do",
+  d_todo1:"Connect an AI engine and rerun the simulation with more agents.", d_todo2:"Use «Inject an event» to test alternative scenarios.", d_none:"None", agents_n:"agents",
+  d_iv_pos:"Look, on {k} I'm fairly convinced it's a good thing.", d_iv_neg:"On {k} I'm still very critical, and I haven't changed my mind.", d_iv_neu:"On {k} I don't have a clear view yet, it depends how it goes.",
+  d_iv_tail:"As a {r} I see things practically. What matters to me: {m}. (Demo answer: connect an AI for real interviews.)",
+  ex_title:"Supermarket without checkouts",
+  ex_seed:"A large supermarket chain announces that from next month, in 40 stores in the north of the country, it will remove all staffed checkouts: only self-checkouts and app payments will remain. The company says prices will drop by 3% and no employees will be laid off, but they will be «redeployed» to the shop floor. Unions say 600 jobs are at risk. Pensioners' associations are protesting.",
+  ex_q:"Will customers accept the change, or will there be a boycott in the first weeks?"
+},
+ru: {
+  tab_scenario:"Сценарий", tab_sim:"Симуляция", tab_agents:"Агенты", tab_report:"Отчёт", tab_settings:"Настройки", ready:"Готово",
+  new_forecast:"Новый прогноз", title:"Название", title_ph:"Напр. Запуск нового сервиса", seed:"Исходный материал",
+  seed_ph:"Вставьте новость, пресс-релиз, пост, проект правил, описание продукта…",
+  load_txt:"📄 Загрузить .txt", example:"✨ Пример", question:"Что вы хотите спрогнозировать?", question_ph:"Напр. Как отреагирует публика в первую неделю?",
+  default_q:"Как отреагируют люди и как будет меняться мнение?", platform:"Где идёт обсуждение", agents:"Агенты", rounds:"Раунды симуляции",
+  start:"▶ Запустить симуляцию", saved:"Сохранённые симуляции", no_saved:"Сохранённых симуляций нет.", sim_default:"Симуляция",
+  p_x:"Соцсеть вроде X/Twitter", p_reddit:"Форум вроде Reddit", p_local:"Местная группа Facebook / Telegram", p_news:"Комментарии к статье", p_market:"Рынок и инвесторы", p_reviews:"Клиенты и отзывы",
+  no_sim:"Симуляции нет", create_first:"Создайте сценарий, чтобы начать.", pause:"⏸ Пауза", resume:"▶ Продолжить", more:"➕ Ещё раунд",
+  inject_title:"Добавить событие", event_ph:"Напр. Известный блогер критикует проект. Цена падает на 20%.", inject_btn:"⚡ Добавить в следующий раунд",
+  inject_hint:"Агенты отреагируют на событие в следующем раунде: «взгляд сверху» для проверки альтернативных сценариев.",
+  chart_title:"Среднее мнение по раундам", chart_empty:"График появится во время симуляции.", feed:"Лента", feed_empty:"Постов пока нет.", feed_wait:"Агенты читают сценарий…",
+  fav:"За", und:"Не решили", con:"Против", event_round:"Событие (раунд {r})", pos:"позитив", neg:"негатив", neu:"нейтрально", start_lbl:"нач",
+  agents_title:"Агенты", agents_hint:"Нажмите на агента, чтобы увидеть его посты и взять интервью.", no_agents:"Агентов пока нет.", years:"возраст {n}", influence:"влияние {n}",
+  character:"Характер", cares:"Что важно", opinion:"Мнение", wrote:"Что написал ({n})", only_likes:"Только лайки или молчание.", interview:"Интервью", ask_ph:"Почему вы так думаете?", ask:"Спросить", close:"Закрыть",
+  report_title:"Отчёт-прогноз", gen_report:"🧠 Создать отчёт", share:"↗ Поделиться", report_wait:"Отчёт создаётся в конце симуляции, или нажмите кнопку ниже.", report_none:"Запустите симуляцию, чтобы получить отчёт.",
+  writing:"Аналитик пишет…", question_lbl:"Вопрос", generated:"Создано в Stormo · агентов: {a} · раундов: {r}",
+  settings_title:"Настройки", ui_lang:"Язык приложения", engine:"ИИ-движок", api_url:"Адрес API", model:"Модель", api_key:"API-ключ",
+  key_hint:"Ключ хранится только на этом устройстве: запросы идут из браузера (или вашего локального сервера) напрямую к провайдеру.",
+  proxy:"Использовать локальный сервер как прокси", proxy_on:"Локальный сервер найден ✓ Обходит CORS-блокировки некоторых провайдеров.", proxy_off:"Доступно только если Stormo запущен через server.py (ПК или Termux).",
+  sim_lang:"Язык симуляции", theme:"Тема", th_auto:"Авто", th_light:"Светлая", th_dark:"Тёмная", test:"🔌 Проверить связь", save:"Сохранить", how_title:"Как это работает",
+  how:"1. ИИ читает материал и создаёт людей с возрастом, профессией, характером и исходным мнением.<br>2. В каждом раунде агенты читают ленту и решают: написать пост, ответить, лайкнуть или промолчать, и могут менять мнение.<br>3. В конце ИИ-аналитик изучает обсуждение и пишет прогноз.<br><br>Демо-режим работает без ключа на простом статистическом движке, только чтобы попробовать приложение.",
+  creating:"Создаю агентов…", round_x:"Раунд {r} из {n}: агенты реагируют…", writing_report:"Пишу отчёт-прогноз…", done_msg:"Симуляция завершена. Отчёт готов.",
+  paused_msg:"На паузе.", error_msg:"Ошибка: {e}", pausing:"Пауза после текущего раунда…", need_key:"Введите API-ключ в Настройках (или используйте Демо).",
+  conn_fail:"Не удалось подключиться (сеть или CORS). Проверьте адрес API или включите локальный прокси.", bad_json:"Ответ ИИ не в формате JSON", bad_agents:"Неверный формат агентов",
+  already:"Симуляция уже идёт", seed_short:"Напишите или вставьте более длинный исходный материал", need_sim:"Сначала запустите симуляцию",
+  ev_queued:"Событие добавлено в следующий раунд", ev_new:"Событие добавлено: начинается новый раунд", report_ready:"Отчёт готов ✓", describe_ev:"Опишите событие",
+  loaded:"Текст загружен", saved_ok:"Настройки сохранены", trying:"Проверяю…", conn_ok:"Связь установлена ✓", demo_nc:"Демо не использует подключения",
+  no_report:"Нет отчёта для отправки", copied:"Отчёт скопирован", del_q:"Удалить эту симуляцию?", wait_run:"Дождитесь окончания текущей симуляции",
+  est_demo:"Демо-режим: без запросов к ИИ.", est:"Примерно {c} запросов к ИИ ({p}).", line_done:"Завершено · агентов: {a} · раундов: {r} · постов: {p}", line_round:"Раунд {r}/{n} · {s}",
+  batch_fail:"Раунд {r}: групп агентов без ответа: {f}", st_new:"новая", st_running:"идёт", st_paused:"пауза", st_done:"завершена", st_error:"ошибка",
+  pv_demo:"Демо (без ключа)", pv_groq:"Groq (бесплатный тариф)", pv_custom:"Свой (совместимый с OpenAI / Ollama)",
+  d_banner:"⚠️ Демо-режим: результаты созданы простым статистическим движком, а не ИИ. Добавьте API-ключ в Настройках для настоящего прогноза.",
+  d_sum_h:"Кратко", d_sum:"Среднее мнение изменилось с {a} до {b}. В итоге «за»: {f} из {n} агентов, «против»: {c}.", d_fc_h:"Прогноз",
+  d_fc:"Вероятность в целом положительной реакции: **{p}%** (низкая уверенность, демо).", d_gr_h:"Группы и лагеря", d_top_h:"Самые влиятельные посты", d_todo_h:"Что делать",
+  d_todo1:"Подключите ИИ-движок и повторите симуляцию с большим числом агентов.", d_todo2:"Используйте «Добавить событие», чтобы проверить альтернативные сценарии.", d_none:"Нет", agents_n:"агентов",
+  d_iv_pos:"Знаете, насчёт «{k}» я скорее уверен, что это хорошо.", d_iv_neg:"Насчёт «{k}» я по-прежнему настроен критически и мнение не изменил.", d_iv_neu:"По «{k}» у меня пока нет чёткого мнения, посмотрим, как пойдёт.",
+  d_iv_tail:"Как {r}, я смотрю на вещи практично. Мне важно: {m}. (Демо-ответ: подключите ИИ для настоящих интервью.)",
+  ex_title:"Супермаркет без касс",
+  ex_seed:"Крупная сеть супермаркетов объявляет, что со следующего месяца в 40 магазинах на севере страны уберёт все кассы с кассирами: останутся только кассы самообслуживания и оплата через приложение. Компания обещает снизить цены на 3% и никого не увольнять, а «перевести» сотрудников в торговый зал. Профсоюзы говорят, что под угрозой 600 рабочих мест. Объединения пенсионеров протестуют.",
+  ex_q:"Примут ли покупатели изменения или в первые недели начнётся бойкот?"
+}};
+const PLATFORMS = ['p_x', 'p_reddit', 'p_local', 'p_news', 'p_market', 'p_reviews'];
+const UI_TO_SIM = { it: 'Italiano', en: 'English', ru: 'Русский' };
+const SIM_LANGS = ['Italiano', 'English', 'Русский', 'Română', 'Español', 'Français', 'Deutsch'];
+const LOCALES = { it: 'it-IT', en: 'en-GB', ru: 'ru-RU' };
+
+/* =================== utilità =================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp = (v, a = -1, b = 1) => Math.max(a, Math.min(b, Number.isFinite(+v) ? +v : 0));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const rnd = (a, b) => a + Math.random() * (b - a);
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const chunk = (arr, n) => { const o = []; for (let i = 0; i < arr.length; i += n) o.push(arr.slice(i, i + n)); return o; };
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+};
+function detectUi() { const l = (navigator.language || 'en').slice(0, 2).toLowerCase(); return I18N[l] ? l : (['uk', 'be', 'kk'].includes(l) ? 'ru' : 'en'); }
+function t(key, vars, lang) {
+  const d = I18N[lang || settings.ui] || I18N.en;
+  let s = d[key] ?? I18N.en[key] ?? key;
+  if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] ?? m));
+  return s;
+}
+function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('show'), 3500); }
+function color(id) { let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) % 360; return `hsl(${h} 62% 48%)`; }
+function stanceColor(v) { return v > 0.2 ? 'var(--pos)' : v < -0.2 ? 'var(--neg)' : 'var(--neu)'; }
+async function pool(tasks, limit) {
+  const out = new Array(tasks.length); let i = 0;
+  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, async () => { while (i < tasks.length) { const k = i++; out[k] = await tasks[k](); } }));
+  return out;
+}
+class UserError extends Error {}
+
+/* =================== impostazioni e motori IA =================== */
+const PRESETS = {
+  demo:       { label: 'pv_demo', base: '', model: '' },
+  groq:       { label: 'pv_groq', base: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile', kind: 'openai' },
+  gemini:     { label: 'Google Gemini', base: 'https://generativelanguage.googleapis.com/v1beta', model: 'gemini-2.5-flash', kind: 'gemini' },
+  openai:     { label: 'OpenAI', base: 'https://api.openai.com/v1', model: 'gpt-4o-mini', kind: 'openai' },
+  anthropic:  { label: 'Anthropic Claude', base: 'https://api.anthropic.com/v1', model: 'claude-haiku-4-5', kind: 'anthropic' },
+  openrouter: { label: 'OpenRouter', base: 'https://openrouter.ai/api/v1', model: 'openai/gpt-4o-mini', kind: 'openai' },
+  deepseek:   { label: 'DeepSeek', base: 'https://api.deepseek.com/v1', model: 'deepseek-chat', kind: 'openai' },
+  custom:     { label: 'pv_custom', base: 'http://localhost:11434/v1', model: 'qwen2.5', kind: 'openai' }
+};
+let settings = Object.assign({ provider: 'demo', base: '', model: '', key: '', ui: '', lang: '', theme: '', proxy: null }, store.get('stormo.settings', {}));
+if (!I18N[settings.ui]) settings.ui = detectUi();
+if (!SIM_LANGS.includes(settings.lang)) settings.lang = UI_TO_SIM[settings.ui];
+if (!PRESETS[settings.provider]) settings.provider = 'demo';
+const isDemo = () => settings.provider === 'demo';
+const saveSettings = () => store.set('stormo.settings', settings);
+
+/* server locale (server.py su PC o Termux) */
+let proxyOK = false;
+async function detectProxy() {
+  if (!location.protocol.startsWith('http')) return renderProxy();
+  try { const r = await fetch('proxy/ping', { cache: 'no-store' }); const j = await r.json(); proxyOK = !!(j && j.ok); } catch (e) { proxyOK = false; }
+  if (proxyOK && settings.proxy === null) { settings.proxy = true; saveSettings(); }
+  renderProxy();
+}
+const useProxy = () => proxyOK && settings.proxy === true;
+const via = url => (useProxy() && !/^https?:\/\/(localhost|127\.0\.0\.1)/.test(url)) ? 'proxy?url=' + encodeURIComponent(url) : url;
+
+function errText(d, res) {
+  const e = d && d.error;
+  if (e) return typeof e === 'string' ? e : (e.message || JSON.stringify(e));
+  return 'HTTP ' + res.status;
+}
+async function llm(system, user, maxTokens = 2500) {
+  const p = PRESETS[settings.provider];
+  const base = (settings.base || p.base).replace(/\/+$/, '');
+  const model = settings.model || p.model;
+  if (!settings.key && settings.provider !== 'custom') throw new UserError(t('need_key'));
+  let res, data;
+  try {
+    if (p.kind === 'openai') {
+      const headers = { 'Content-Type': 'application/json' };
+      if (settings.key) headers.Authorization = 'Bearer ' + settings.key;
+      res = await fetch(via(base + '/chat/completions'), { method: 'POST', headers, body: JSON.stringify({ model, temperature: 0.9, max_tokens: maxTokens, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] }) });
+      data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new UserError(errText(data, res));
+      return data.choices?.[0]?.message?.content || '';
+    }
+    if (p.kind === 'anthropic') {
+      res = await fetch(via(base + '/messages'), { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': settings.key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }, body: JSON.stringify({ model, max_tokens: maxTokens, temperature: 0.9, system, messages: [{ role: 'user', content: user }] }) });
+      data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new UserError(errText(data, res));
+      return (data.content || []).map(c => c.text || '').join('');
+    }
+    if (p.kind === 'gemini') {
+      res = await fetch(via(`${base}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(settings.key)}`), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: user }] }], generationConfig: { temperature: 0.9, maxOutputTokens: maxTokens } }) });
+      data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new UserError(errText(data, res));
+      return (data.candidates?.[0]?.content?.parts || []).map(x => x.text || '').join('');
+    }
+  } catch (e) {
+    if (e instanceof TypeError) throw new UserError(t('conn_fail'));
+    throw e;
+  }
+  throw new UserError('?');
+}
+function parseJSON(txt) {
+  txt = String(txt).replace(/```(?:json)?/gi, '').trim();
+  const s = txt.search(/[\[{]/); if (s < 0) throw new Error(t('bad_json'));
+  const close = txt[s] === '[' ? ']' : '}';
+  return JSON.parse(txt.slice(s, txt.lastIndexOf(close) + 1));
+}
+async function llmJSON(system, user, maxTokens) {
+  let last;
+  for (let i = 0; i < 2; i++) {
+    try { return parseJSON(await llm(system, user, maxTokens)); }
+    catch (e) { last = e; if (e instanceof UserError) break; }
+  }
+  throw last instanceof SyntaxError ? new Error(t('bad_json')) : last;
+}
+const SYS = () => `You are the engine of a multi-agent social simulation used for forecasting. You role-play very different real people faithfully: their character, interests, biases and way of writing (informal, slang or typos when it fits). Write ALL generated content (names, roles, posts, answers) in ${sim.lang}, with names and cultural details natural for that language unless the scenario says otherwise. When JSON is requested, reply with valid JSON ONLY, no text before or after.`;
+const platformEN = () => I18N.en[sim.platform] || sim.platform;
+
+/* =================== stato simulazione =================== */
+let sim = null, running = false, paused = false, pendingEvents = [];
+const agentById = id => sim && sim.agents.find(a => a.id === id);
+const avgStance = () => {
+  if (!sim.agents.length) return 0;
+  const w = a => 0.5 + a.influenza / 10;
+  return sim.agents.reduce((s, a) => s + a.posizione * w(a), 0) / sim.agents.reduce((s, a) => s + w(a), 0);
+};
+function saveSim() {
+  if (!sim) return;
+  const all = store.get('stormo.sims', []).filter(s => s.id !== sim.id);
+  all.unshift(sim);
+  if (!store.set('stormo.sims', all.slice(0, 10))) store.set('stormo.sims', all.slice(0, 3));
+}
+function newSim() {
+  return {
+    id: Date.now().toString(36), created: new Date().toISOString(),
+    title: $('#f-title').value.trim() || t('sim_default') + ' ' + new Date().toLocaleDateString(LOCALES[settings.ui]),
+    seed: $('#f-seed').value.trim(), question: $('#f-question').value.trim() || t('default_q'),
+    platform: $('#f-platform').value, nAgents: +$('#f-agents').value, nRounds: +$('#f-rounds').value, lang: settings.lang,
+    agents: [], posts: [], events: [], stanceHistory: [], round: 0, seq: 0, status: 'new', report: '', chats: {}, engine: settings.provider
+  };
+}
+function statusLabel(s) { const k = 'st_' + s; return I18N.en[k] ? t(k) : s; }
+
+/* =================== fasi della simulazione =================== */
+async function genAgents() {
+  const n = sim.nAgents; let agents = [];
+  if (isDemo()) { await sleep(600); agents = demoAgents(n); }
+  else {
+    for (const size of chunk(Array.from({ length: n }), 15).map(c => c.length)) {
+      const already = agents.map(a => a.nome).join(', ');
+      const arr = await llmJSON(SYS(), `PLATFORM: ${platformEN()}
+SCENARIO:
+${sim.seed.slice(0, 4000)}
+
+QUESTION TO FORECAST: ${sim.question}
+
+Create ${size} realistic people who are very different from each other (age, job, class, place, values, how informed they are) and who would plausibly join this discussion. Include supporters, opponents, undecided people, experts, ordinary people and media/influencers in realistic proportions.${already ? ' They must be different from: ' + already + '.' : ''}
+"posizione" goes from -1 (fully against / negative about the scenario) to 1 (fully in favour / positive). "influenza" from 1 to 10 (reach and credibility).
+Keep the JSON keys exactly as shown; write the values in ${sim.lang}.
+Reply with a JSON array:
+[{"nome":"","eta":0,"ruolo":"","gruppo":"e.g. citizens, experts, media, business","personalita":"character and writing style in a few words","motivazione":"what they really care about","posizione":0,"influenza":5}]`, 4000);
+      if (!Array.isArray(arr)) throw new Error(t('bad_agents'));
+      agents = agents.concat(arr.slice(0, size));
+    }
+  }
+  return agents.map((a, i) => ({
+    id: 'a' + (i + 1), nome: String(a.nome || 'Agent ' + (i + 1)), eta: a.eta || '', ruolo: String(a.ruolo || ''), gruppo: String(a.gruppo || '—'),
+    personalita: String(a.personalita || ''), motivazione: String(a.motivazione || ''),
+    posizione: clamp(a.posizione), posizione0: clamp(a.posizione), influenza: Math.round(clamp(a.influenza || 5, 1, 10))
+  }));
+}
+
+function feedSummary() {
+  return sim.posts.slice(-30).map(p => {
+    if (p.type === 'evento') return `[EVENT, round ${p.round}] ${p.text}`;
+    const a = agentById(p.author);
+    return `[${p.id}] ${a ? a.nome : '?'} (${a ? a.ruolo : ''})${p.replyTo ? ' replying to ' + p.replyTo : ''}: ${p.text.slice(0, 220)} [${p.likes || 0} likes]`;
+  }).join('\n');
+}
+
+async function roundBatch(r, batch, feed, ev) {
+  if (isDemo()) { await sleep(350); return demoRound(batch, ev); }
+  const arr = await llmJSON(SYS(), `PLATFORM: ${platformEN()}
+SCENARIO:
+${sim.seed.slice(0, 3500)}
+
+QUESTION TO FORECAST: ${sim.question}
+ROUND ${r} of ${sim.nRounds}.
+${ev.length ? 'NEW EVENT THAT JUST HAPPENED (everyone knows about it): ' + ev.join(' | ') + '\n' : ''}
+RECENT FEED:
+${feed || '(still empty: they are the first to react)'}
+
+AGENTS ACTING NOW:
+${batch.map(a => `${a.id} | ${a.nome}, ${a.eta}, ${a.ruolo} (${a.gruppo}) | character: ${a.personalita} | cares about: ${a.motivazione} | current stance ${a.posizione.toFixed(2)} | influence ${a.influenza}`).join('\n')}
+
+For EACH agent choose a realistic action for this platform: "post" (new content), "risposta" (reply to a feed post: put its id in target), "like" (put target), "silenzio" (stay silent).
+People who are not very involved often just like or stay silent. Agents can change their mind when exposed to strong arguments or influential people, but with inertia. Not everyone has to agree.
+Write "testo" in ${sim.lang}. Reply with a JSON array, one object per agent:
+[{"agente":"a1","azione":"post","target":null,"testo":"max 280 characters in the character's style","sentimento":0,"posizione":0}]
+"sentimento" and "posizione" go from -1 to 1; "posizione" is the agent's updated stance after this round.`, 3000);
+  return Array.isArray(arr) ? arr : [];
+}
+
+function applyAction(r, a) {
+  const ag = agentById(String(a.agente || '').trim()); if (!ag) return;
+  if (a.posizione !== undefined && a.posizione !== null) ag.posizione = clamp(a.posizione);
+  const act = String(a.azione || '').toLowerCase();
+  const target = a.target ? sim.posts.find(p => p.id === String(a.target).replace(/[\[\]]/g, '').trim() && p.type !== 'evento') : null;
+  if (act.startsWith('like')) { if (target) { target.likes = (target.likes || 0) + 1; (target.likedBy = target.likedBy || []).push(ag.id); } return; }
+  if (act.startsWith('silen') || act.startsWith('silent') || !a.testo) return;
+  const isReply = (act.startsWith('rispo') || act.startsWith('repl')) && target;
+  sim.posts.push({ id: 'p' + (++sim.seq), type: 'post', round: r, author: ag.id, parent: isReply ? (target.parent || target.id) : null, replyTo: isReply ? target.id : null, text: String(a.testo).slice(0, 600), sent: clamp(a.sentimento), likes: 0 });
+}
+
+async function runRound(r, ev) {
+  const feed = feedSummary();
+  const order = [...sim.agents].sort(() => Math.random() - 0.5);
+  const batches = chunk(order, 6); let fails = 0, lastErr;
+  const results = await pool(batches.map(b => async () => {
+    try { return await roundBatch(r, b, feed, ev); } catch (e) { fails++; lastErr = e; return []; }
+  }), 3);
+  if (fails === batches.length) throw lastErr;
+  if (fails) toast(t('batch_fail', { r, f: fails }));
+  results.flat().sort(() => Math.random() - 0.5).forEach(a => applyAction(r, a));
+}
+
+async function runSim() {
+  if (running || !sim) return;
+  running = true; paused = false; sim.status = 'running'; renderAll();
+  try {
+    if (!sim.agents.length) {
+      setStep(t('creating'), 3);
+      sim.agents = await genAgents();
+      sim.stanceHistory = [avgStance()]; saveSim(); renderAll();
+    }
+    while (sim.round < sim.nRounds && !paused) {
+      const r = sim.round + 1;
+      const ev = pendingEvents.splice(0);
+      ev.forEach(x => { sim.events.push({ round: r, text: x }); sim.posts.push({ id: 'e' + (++sim.seq), type: 'evento', round: r, text: x }); });
+      setStep(t('round_x', { r, n: sim.nRounds }), 5 + 85 * (r - 1) / sim.nRounds);
+      await runRound(r, ev);
+      sim.round = r; sim.stanceHistory.push(avgStance()); saveSim(); renderAll();
+    }
+    if (sim.round >= sim.nRounds) {
+      sim.status = 'done';
+      setStep(t('writing_report'), 94);
+      await genReport();
+      setStep(t('done_msg'), 100);
+      toast(t('report_ready'));
+    } else { sim.status = 'paused'; }
+  } catch (e) {
+    sim.status = 'error'; sim.lastError = e.message; toast(t('error_msg', { e: e.message }));
+  }
+  running = false; saveSim(); renderAll();
+}
+
+async function genReport() {
+  if (!sim || !sim.agents.length) return toast(t('need_sim'));
+  const replies = id => sim.posts.filter(x => x.replyTo === id).length;
+  const top = sim.posts.filter(p => p.type === 'post').map(p => ({ p, s: (p.likes || 0) + 2 * replies(p.id) })).sort((a, b) => b.s - a.s).slice(0, 12);
+  const groups = {};
+  sim.agents.forEach(a => { (groups[a.gruppo] = groups[a.gruppo] || []).push(a); });
+  if (isDemo()) { await sleep(700); sim.report = demoReport(top, groups); saveSim(); renderReport(); return; }
+  const avg = (l, k) => (l.reduce((s, a) => s + a[k], 0) / l.length).toFixed(2);
+  const data = `SCENARIO:
+${sim.seed.slice(0, 3500)}
+
+QUESTION: ${sim.question}
+PLATFORM: ${platformEN()} | ${sim.agents.length} agents | ${sim.round} rounds
+INJECTED EVENTS: ${sim.events.map(e => `round ${e.round}: ${e.text}`).join(' | ') || 'none'}
+INFLUENCE-WEIGHTED AVERAGE STANCE PER ROUND (-1..1): ${sim.stanceHistory.map(v => v.toFixed(2)).join(' → ')}
+GROUPS (average stance start → end):
+${Object.entries(groups).map(([g, l]) => `${g} (${l.length}): ${avg(l, 'posizione0')} → ${avg(l, 'posizione')}`).join('\n')}
+AGENTS (start → end, influence):
+${sim.agents.map(a => `${a.nome}, ${a.ruolo}: ${a.posizione0.toFixed(2)} → ${a.posizione.toFixed(2)} (inf. ${a.influenza})`).join('\n')}
+MOST RELEVANT POSTS:
+${top.map(({ p }) => { const a = agentById(p.author); return `- ${a ? a.nome : '?'} (round ${p.round}, ${p.likes || 0} likes, ${replies(p.id)} replies): ${p.text}`; }).join('\n')}`;
+  sim.report = await llm(`You are an expert analyst of public opinion, markets and social behaviour. Write in ${sim.lang}, in Markdown, clear and concrete, no fluff. Base your analysis on the simulation data but also use common sense: a simulation with few agents is indicative, not certain.`,
+`${data}
+
+Write the FORECAST REPORT with these sections (translate the headings into ${sim.lang}, use ## for each):
+1. Summary (3-4 sentences)
+2. Forecast (direct answer to the question, with a probability estimate in % and a confidence level)
+3. How opinion evolved (turning points, who moved the discussion)
+4. Factions and groups
+5. Arguments that worked and arguments that failed
+6. Risks and signals to watch
+7. What to do (3-5 practical recommendations)`, 3500);
+  saveSim(); renderReport();
+}
+
+async function interview(agent, question) {
+  const myPosts = sim.posts.filter(p => p.author === agent.id).map(p => '- ' + p.text).join('\n') || '(wrote nothing)';
+  const history = (sim.chats[agent.id] || []).slice(-4).map(c => `Q: ${c.q}\nA: ${c.a}`).join('\n');
+  if (isDemo()) { await sleep(500); return demoInterview(agent); }
+  return llm(`You are ${agent.nome}, ${agent.eta}, ${agent.ruolo}. Character: ${agent.personalita}. You care about: ${agent.motivazione}. Answer in first person, staying in character, naturally and honestly, max 120 words. Answer in the language the interviewer uses.`,
+`Discussion context:
+${sim.seed.slice(0, 2000)}
+
+Your opinion moved from ${agent.posizione0.toFixed(2)} to ${agent.posizione.toFixed(2)} (scale -1 against, 1 in favour).
+What you wrote:
+${myPosts}
+${history ? '\nPrevious conversation:\n' + history : ''}
+
+The interviewer asks: ${question}`, 600);
+}
+
+/* =================== modalità demo (senza IA) =================== */
+const DEMO = {
+  it: {
+    names: ['Giulia','Marco','Sara','Luca','Chiara','Matteo','Francesca','Alessandro','Elena','Davide','Martina','Simone','Valentina','Andrea','Federica','Paolo','Ilaria','Stefano','Anna','Giorgio','Silvia','Roberto','Laura','Fabio','Marta','Nicola','Elisa','Riccardo','Sofia','Antonio','Irina','Mihai','Olena','Ahmed','Fatima','Chen','Lucia','Pietro','Beatrice','Enrico'],
+    roles: [['studente universitario','giovani'],['artigiano','lavoratori'],['giornalista locale','media'],['commercialista','esperti'],['pensionato','cittadini'],['influencer','media'],['imprenditore','imprese'],['infermiere','lavoratori'],['professore','esperti'],['rider','lavoratori'],['genitore lavoratore','cittadini'],['avvocato','esperti'],['sindacalista','lavoratori'],['startupper','imprese'],['attivista','cittadini'],['analista finanziario','esperti'],['negoziante','imprese'],['operaio','lavoratori']],
+    chars: ['ironico e diretto','prudente e riflessivo','polemico','entusiasta','scettico','pragmatico','emotivo','tecnico e preciso','sarcastico','conciliante'],
+    motives: ['il portafoglio','la propria città','la verità dei fatti','la visibilità','il futuro dei figli','il lavoro'],
+    pos: ['Sinceramente su {k} sono ottimista: può funzionare.','Era ora che si parlasse di {k}. Lo aspettavo da anni.','Ho letto tutto con calma: su {k} i conti tornano.','Chi critica {k} non ha capito il punto.','Per me {k} è un passo avanti, punto.'],
+    neg: ['{k}? Mi sembra l\'ennesima promessa che non vedremo mai.','Nessuno spiega chi paga per {k}. Io non ci credo.','Su {k} hanno sbagliato tutto, e lo vedremo presto.','Dietro {k} ci sono interessi che non ci raccontano.','Ancora {k}… pensassero ai problemi veri.'],
+    neu: ['Qualcuno ha dati concreti su {k}? Vorrei capire prima di giudicare.','Su {k} vedo pro e contro, aspetto i fatti.','Dibattito interessante su {k}, ma mancano i dettagli.'],
+    rpos: ['@{n} d\'accordo, e aggiungo che {k} cambia davvero le cose.','@{n} esatto, finalmente qualcuno lo dice.','@{n} hai ragione, l\'ho visto anche io.'],
+    rneg: ['@{n} non sono d\'accordo: su {k} stai esagerando.','@{n} hai delle fonti? A me risulta il contrario.','@{n} con tutto il rispetto, così non funziona.']
+  },
+  en: {
+    names: ['Emma','James','Olivia','Liam','Sophia','Noah','Ava','Lucas','Mia','Ethan','Grace','Daniel','Chloe','Ryan','Hannah','Jack','Zoe','Sam','Leah','Owen','Priya','Ahmed','Mei','Carlos','Fatima','Tom','Nina','Ben','Sara','Alex'],
+    roles: [['university student','young people'],['tradesperson','workers'],['local journalist','media'],['accountant','experts'],['retiree','citizens'],['influencer','media'],['business owner','business'],['nurse','workers'],['teacher','experts'],['delivery rider','workers'],['working parent','citizens'],['lawyer','experts'],['union rep','workers'],['startup founder','business'],['activist','citizens'],['financial analyst','experts'],['shop owner','business'],['factory worker','workers']],
+    chars: ['ironic and blunt','cautious and thoughtful','argumentative','enthusiastic','sceptical','pragmatic','emotional','precise and technical','sarcastic','conciliatory'],
+    motives: ['their wallet','their town','facts and truth','visibility','their kids\' future','their job'],
+    pos: ['Honestly I\'m optimistic about {k}: it could work.','Finally someone talks about {k}. Been waiting for years.','Read it all carefully: on {k} the numbers add up.','Anyone criticising {k} missed the point.','To me {k} is a step forward, full stop.'],
+    neg: ['{k}? Sounds like yet another promise we\'ll never see.','Nobody explains who pays for {k}. I don\'t buy it.','They got {k} completely wrong, we\'ll see soon enough.','There are interests behind {k} nobody tells us about.','{k} again… how about fixing real problems?'],
+    neu: ['Anyone have actual data on {k}? I want to understand before judging.','I see pros and cons on {k}, waiting for facts.','Interesting debate on {k}, but the details are missing.'],
+    rpos: ['@{n} agreed, and {k} really does change things.','@{n} exactly, finally someone says it.','@{n} you\'re right, I\'ve seen it too.'],
+    rneg: ['@{n} disagree: you\'re exaggerating about {k}.','@{n} got sources? Everything I\'ve seen says the opposite.','@{n} with respect, that\'s not how it works.']
+  },
+  ru: {
+    names: ['Анна','Дмитрий','Ольга','Сергей','Мария','Алексей','Елена','Иван','Наталья','Андрей','Татьяна','Михаил','Ирина','Павел','Юлия','Николай','Светлана','Артём','Ксения','Владимир','Екатерина','Игорь','Дарья','Максим','Алина','Роман','Вера','Олег','София','Кирилл'],
+    roles: [['студент','молодёжь'],['мастер-ремонтник','работники'],['местный журналист','СМИ'],['бухгалтер','эксперты'],['пенсионер','горожане'],['блогер','СМИ'],['предприниматель','бизнес'],['медработник','работники'],['преподаватель','эксперты'],['курьер','работники'],['работающий родитель','горожане'],['юрист','эксперты'],['профсоюзный активист','работники'],['основатель стартапа','бизнес'],['общественный активист','горожане'],['финансовый аналитик','эксперты'],['владелец магазина','бизнес'],['рабочий','работники']],
+    chars: ['ироничный и прямой','осторожный и вдумчивый','любит спорить','восторженный','скептик','прагматик','эмоциональный','точный и технический','саркастичный','миролюбивый'],
+    motives: ['свой кошелёк','родной город','правда и факты','известность','будущее детей','работа'],
+    pos: ['Честно, насчёт «{k}» я оптимист: может сработать.','Наконец-то заговорили про «{k}». Давно этого ждали.','Прочитал всё спокойно: по «{k}» цифры сходятся.','Кто критикует «{k}», тот не понял сути.','Для меня «{k}» это шаг вперёд, и точка.'],
+    neg: ['«{k}»? Очередное обещание, которое никто не выполнит.','Никто не объясняет, кто заплатит за «{k}». Не верю.','С «{k}» всё сделали неправильно, скоро увидим.','За «{k}» стоят интересы, о которых нам не говорят.','Опять «{k}»… лучше бы решали настоящие проблемы.'],
+    neu: ['Есть у кого-нибудь конкретные данные про «{k}»? Хочу разобраться, прежде чем судить.','По «{k}» вижу и плюсы, и минусы, жду фактов.','Интересная дискуссия про «{k}», но не хватает деталей.'],
+    rpos: ['@{n} согласен, и добавлю, что «{k}» правда многое меняет.','@{n} точно, наконец-то кто-то это сказал.','@{n} ты прав, я тоже это видел.'],
+    rneg: ['@{n} не согласен: насчёт «{k}» ты преувеличиваешь.','@{n} а источники есть? У меня другие данные.','@{n} при всём уважении, так это не работает.']
+  }
+};
+const demoLang = () => ({ 'Русский': 'ru', 'Italiano': 'it' }[sim.lang] || 'en');
+const D = () => DEMO[demoLang()];
+const STOP = new Set(('della delle degli dello questo questa quella quello anche come sono perché quando dove sulla sulle nelle negli alla alle agli dalla dalle dagli hanno essere fatto fare molto tutti tutte ancora ogni senza oltre nostro nostra saranno sarebbe potrebbe dovrebbe mentre secondo prossimo ' +
+  'their there which about would could these those after before should because people other where while month ' +
+  'который которые которая чтобы также будет более этого этом этой после теперь только сейчас следующего говорят').split(' '));
+function keywords() {
+  const w = ((sim.seed + ' ' + sim.question).toLowerCase().match(/[a-zàèéìòùăâîșțа-яё]{6,}/g)) || [];
+  const f = {}; w.forEach(x => { if (!STOP.has(x)) f[x] = (f[x] || 0) + 1; });
+  const k = Object.entries(f).sort((a, b) => b[1] - a[1]).slice(0, 8).map(x => x[0]);
+  return k.length ? k : ['…'];
+}
+function demoAgents(n) {
+  const d = D(); const names = [...d.names].sort(() => Math.random() - 0.5);
+  return Array.from({ length: n }, (_, i) => {
+    const [ruolo, gruppo] = pick(d.roles);
+    return { nome: names[i % names.length], eta: Math.round(rnd(19, 74)), ruolo, gruppo, personalita: pick(d.chars), motivazione: pick(d.motives), posizione: clamp(rnd(-1, 1) * 0.8 + rnd(-0.2, 0.2)), influenza: Math.round(rnd(1, 10)) };
+  });
+}
+function demoRound(batch, ev) {
+  const d = D(), k = keywords(); const posts = sim.posts.filter(p => p.type === 'post');
+  const recent = posts.slice(-15), wt = p => 1 + (p.likes || 0) / 3;
+  const feedAvg = recent.length ? recent.reduce((s, p) => s + p.sent * wt(p), 0) / recent.reduce((s, p) => s + wt(p), 0) : 0;
+  const shock = ev.length ? rnd(-0.35, 0.35) : 0;
+  return batch.map(a => {
+    const pos = clamp(a.posizione + 0.12 * (feedAvg - a.posizione) * (1 - Math.abs(a.posizione) / 2) + shock + rnd(-0.08, 0.08));
+    const roll = Math.random(), kw = pick(k);
+    const tone = pos > 0.2 ? 'pos' : pos < -0.2 ? 'neg' : 'neu';
+    const target = posts.length ? pick(posts.slice(-12)) : null;
+    if (target && roll < 0.3) {
+      const ta = agentById(target.author); const agree = Math.sign(target.sent) === Math.sign(pos);
+      return { agente: a.id, azione: 'risposta', target: target.id, testo: pick(agree ? d.rpos : d.rneg).replace('{n}', ta ? ta.nome : '').replace('{k}', kw), sentimento: pos, posizione: pos };
+    }
+    if (target && roll < 0.55 && Math.sign(target.sent) === Math.sign(pos)) return { agente: a.id, azione: 'like', target: target.id, posizione: pos };
+    if (roll < 0.85 || !posts.length) return { agente: a.id, azione: 'post', testo: pick(d[tone]).replace('{k}', kw), sentimento: pos, posizione: pos };
+    return { agente: a.id, azione: 'silenzio', posizione: pos };
+  });
+}
+function demoReport(top, groups) {
+  const L = demoLang(), h = sim.stanceHistory, start = h[0], end = h[h.length - 1];
+  const f = sim.agents.filter(a => a.posizione > 0.2).length, c = sim.agents.filter(a => a.posizione < -0.2).length;
+  const g = Object.entries(groups).map(([n, l]) => `- **${n}**: ${(l.reduce((s, a) => s + a.posizione, 0) / l.length).toFixed(2)} (${l.length} ${t('agents_n', null, L)})`).join('\n');
+  const tp = top.slice(0, 3).map(({ p }) => `- ${agentById(p.author)?.nome}: «${p.text}»`).join('\n');
+  return `> ${t('d_banner', null, L)}
+
+## ${t('d_sum_h', null, L)}
+${t('d_sum', { a: start.toFixed(2), b: end.toFixed(2), f, n: sim.agents.length, c }, L)}
+
+## ${t('d_fc_h', null, L)}
+${t('d_fc', { p: Math.round(50 + end * 45) }, L)}
+
+## ${t('d_gr_h', null, L)}
+${g}
+
+## ${t('d_top_h', null, L)}
+${tp || '- ' + t('d_none', null, L)}
+
+## ${t('d_todo_h', null, L)}
+- ${t('d_todo1', null, L)}
+- ${t('d_todo2', null, L)}`;
+}
+function demoInterview(a) {
+  const L = demoLang(), k = pick(keywords());
+  const key = a.posizione > 0.2 ? 'd_iv_pos' : a.posizione < -0.2 ? 'd_iv_neg' : 'd_iv_neu';
+  return t(key, { k }, L) + ' ' + t('d_iv_tail', { r: a.ruolo, m: a.motivazione }, L);
+}
+
+/* =================== interfaccia =================== */
+function show(v) {
+  document.querySelectorAll('.view').forEach(x => x.classList.toggle('active', x.id === 'v-' + v));
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  window.scrollTo(0, 0);
+}
+function setStep(text, pct) {
+  $('#s-step').textContent = text; $('#status').textContent = text;
+  if (pct !== null && pct !== undefined) $('#s-prog').style.width = pct + '%';
+}
+function applyI18n() {
+  document.documentElement.lang = settings.ui;
+  document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
+  document.querySelectorAll('[data-i18n-html]').forEach(el => el.innerHTML = t(el.dataset.i18nHtml));
+  document.querySelectorAll('#langs button').forEach(b => b.classList.toggle('on', b.dataset.l === settings.ui));
+  const pv = $('#f-platform').value || PLATFORMS[0];
+  $('#f-platform').innerHTML = PLATFORMS.map(k => `<option value="${k}">${esc(t(k))}</option>`).join('');
+  $('#f-platform').value = pv;
+  fillSettings(); updateEstimate(); renderAll();
+}
+function setUi(l) { if (!I18N[l]) return; settings.ui = l; saveSettings(); applyI18n(); }
+
+function renderControls() {
+  $('#s-title').textContent = sim ? sim.title : t('no_sim');
+  $('#b-pause').disabled = !sim || (sim.status === 'done' && !running);
+  $('#b-pause').textContent = running ? t('pause') : t('resume');
+  $('#b-more').disabled = !sim || running || sim.round < sim.nRounds;
+  if (!sim) { $('#s-step').textContent = t('create_first'); $('#status').textContent = t('ready'); $('#s-prog').style.width = '0'; return; }
+  if (!running) {
+    $('#s-prog').style.width = (sim.nRounds ? Math.round(100 * sim.round / sim.nRounds) : 0) + '%';
+    const msg = sim.status === 'done' ? t('line_done', { a: sim.agents.length, r: sim.round, p: sim.posts.filter(p => p.type === 'post').length })
+      : sim.status === 'error' ? t('error_msg', { e: sim.lastError || '' })
+      : t('line_round', { r: sim.round, n: sim.nRounds, s: statusLabel(sim.status) });
+    $('#s-step').textContent = msg; $('#status').textContent = sim.title;
+  }
+}
+function renderChart() {
+  const h = sim ? sim.stanceHistory : [];
+  if (h.length < 1) { $('#chart').innerHTML = `<div class="empty">${esc(t('chart_empty'))}</div>`; $('#dist').innerHTML = ''; return; }
+  const W = 340, H = 150, px = 28, py = 12;
+  const x = i => px + (h.length === 1 ? (W - px - 10) / 2 : i * (W - px - 10) / (h.length - 1));
+  const y = v => py + (1 - (v + 1) / 2) * (H - 2 * py - 12);
+  const pts = h.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const evs = (sim.events || []).filter(e => e.round < h.length).map(e => `<line x1="${x(e.round)}" x2="${x(e.round)}" y1="${py}" y2="${H - 24}" stroke="var(--acc)" stroke-dasharray="3 3"/><text x="${x(e.round) + 3}" y="${py + 8}">⚡</text>`).join('');
+  $('#chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(t('chart_title'))}">
+    <rect x="${px}" y="${y(1)}" width="${W - px - 10}" height="${y(0.2) - y(1)}" fill="var(--pos)" opacity=".07"/>
+    <rect x="${px}" y="${y(-0.2)}" width="${W - px - 10}" height="${y(-1) - y(-0.2)}" fill="var(--neg)" opacity=".07"/>
+    <line x1="${px}" x2="${W - 10}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line)"/>
+    <text x="2" y="${y(1) + 4}">+1</text><text x="6" y="${y(0) + 4}">0</text><text x="2" y="${y(-1) + 4}">−1</text>
+    ${h.map((_, i) => `<text x="${x(i) - 4}" y="${H - 6}">${i === 0 ? esc(t('start_lbl')) : i}</text>`).join('')}
+    ${evs}
+    <polyline points="${pts}" fill="none" stroke="url(#g)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    ${h.map((v, i) => `<circle cx="${x(i)}" cy="${y(v)}" r="3.5" fill="${stanceColor(v)}"/>`).join('')}
+    <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#0ea5e9"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs>
+  </svg>`;
+  const n = sim.agents.length || 1;
+  const f = sim.agents.filter(a => a.posizione > 0.2).length, c = sim.agents.filter(a => a.posizione < -0.2).length, u = sim.agents.length - f - c;
+  $('#dist').innerHTML = `<div class="bars"><i style="width:${100 * f / n}%;background:var(--pos)"></i><i style="width:${100 * u / n}%;background:var(--neu)"></i><i style="width:${100 * c / n}%;background:var(--neg)"></i></div>
+  <div class="legend"><span><i class="dot" style="background:var(--pos)"></i> ${esc(t('fav'))} ${f}</span><span><i class="dot" style="background:var(--neu)"></i> ${esc(t('und'))} ${u}</span><span><i class="dot" style="background:var(--neg)"></i> ${esc(t('con'))} ${c}</span></div>`;
+}
+function postHTML(p, reply) {
+  const a = agentById(p.author) || { nome: '?', ruolo: '', id: 'x' };
+  return `<div class="post${reply ? ' reply' : ''}">
+    <div class="av" style="background:${color(a.id + a.nome)}">${esc(a.nome[0])}</div>
+    <div class="pbody"><div class="pmeta"><b>${esc(a.nome)}</b><span>${esc(a.ruolo)}</span><span>· R${p.round}</span></div>
+    <div class="ptext">${esc(p.text)}</div>
+    <div class="pfoot"><span>♥ ${p.likes || 0}</span><span><i class="dot" style="background:${stanceColor(p.sent)}"></i> ${esc(t(p.sent > 0.2 ? 'pos' : p.sent < -0.2 ? 'neg' : 'neu'))}</span></div></div></div>`;
+}
+function renderFeed() {
+  if (!sim || !sim.posts.length) { $('#feed').innerHTML = `<div class="empty">${esc(t(running ? 'feed_wait' : 'feed_empty'))}</div>`; return; }
+  const tops = sim.posts.filter(p => !p.parent).slice().reverse();
+  $('#feed').innerHTML = tops.map(p => p.type === 'evento'
+    ? `<div class="event">⚡ <b>${esc(t('event_round', { r: p.round }))}</b><br>${esc(p.text)}</div>`
+    : postHTML(p) + sim.posts.filter(x => x.parent === p.id).map(x => postHTML(x, true)).join('')).join('');
+}
+function renderAgents() {
+  if (!sim || !sim.agents.length) { $('#agents').innerHTML = `<div class="empty">${esc(t('no_agents'))}</div>`; return; }
+  $('#agents').innerHTML = [...sim.agents].sort((a, b) => b.influenza - a.influenza).map(a => {
+    const v = a.posizione, d = v - a.posizione0;
+    const left = v >= 0 ? 50 : 50 + v * 50, w = Math.abs(v) * 50;
+    return `<div class="agent" data-id="${a.id}">
+      <div class="av" style="background:${color(a.id + a.nome)}">${esc(a.nome[0])}</div>
+      <div class="info"><b>${esc(a.nome)}</b> <span class="chip">${esc(a.gruppo)}</span>
+      <small>${esc(t('years', { n: a.eta }))} · ${esc(a.ruolo)} · ${esc(t('influence', { n: a.influenza }))}</small>
+      <div class="stance"><i style="left:${left}%;width:${w}%;background:${stanceColor(v)}"></i></div></div>
+      <div style="font-size:12px;color:${Math.abs(d) < 0.05 ? 'var(--muted)' : d > 0 ? 'var(--pos)' : 'var(--neg)'};font-weight:700">${d > 0 ? '+' : ''}${d.toFixed(2)}</div></div>`;
+  }).join('');
+}
+function md(src) {
+  const lines = esc(src).split('\n'); let html = '', list = null;
+  const inl = s => s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|\s)\*(\S.*?)\*/g, '$1<i>$2</i>');
+  const close = () => { if (list) { html += `</${list}>`; list = null; } };
+  for (const l of lines) {
+    let m;
+    if ((m = l.match(/^(#{1,4})\s+(.*)/))) { close(); const n = Math.min(m[1].length + 1, 4); html += `<h${n}>${inl(m[2])}</h${n}>`; }
+    else if ((m = l.match(/^\s*[-*•]\s+(.*)/))) { if (list !== 'ul') { close(); html += '<ul>'; list = 'ul'; } html += `<li>${inl(m[1])}</li>`; }
+    else if ((m = l.match(/^\s*\d+[.)]\s+(.*)/))) { if (list !== 'ol') { close(); html += '<ol>'; list = 'ol'; } html += `<li>${inl(m[1])}</li>`; }
+    else if ((m = l.match(/^&gt;\s?(.*)/))) { close(); html += `<p class="hint">${inl(m[1])}</p>`; }
+    else if (!l.trim()) close();
+    else { close(); html += `<p>${inl(l)}</p>`; }
+  }
+  close(); return html;
+}
+function renderReport() {
+  $('#report').innerHTML = sim && sim.report ? md(sim.report) : `<div class="empty">${esc(t(sim && sim.agents.length ? 'report_wait' : 'report_none'))}</div>`;
+}
+function renderHistory() {
+  const all = store.get('stormo.sims', []);
+  $('#history').innerHTML = all.length ? all.map(s => `<div class="hist"><div class="t" data-open="${s.id}"><b>${esc(s.title)}</b><small>${new Date(s.created).toLocaleString(LOCALES[settings.ui], { dateStyle: 'short', timeStyle: 'short' })} · ${s.agents.length} ${esc(t('agents_n'))} · ${esc(statusLabel(s.status))}</small></div><button class="x" data-del="${s.id}" aria-label="×">×</button></div>`).join('') : `<div class="empty">${esc(t('no_saved'))}</div>`;
+}
+function renderProxy() {
+  $('#c-proxy').checked = settings.proxy === true;
+  $('#c-proxy').disabled = !proxyOK;
+  $('#o-proxy').textContent = t(proxyOK ? 'proxy_on' : 'proxy_off');
+}
+function renderAll() { renderControls(); renderChart(); renderFeed(); renderAgents(); renderReport(); renderHistory(); }
+
+function openAgent(id) {
+  const a = agentById(id); if (!a) return;
+  const posts = sim.posts.filter(p => p.author === a.id);
+  const chat = sim.chats[a.id] || [];
+  $('#sheet-body').innerHTML = `
+    <div style="display:flex;gap:12px;align-items:center"><div class="av" style="width:46px;height:46px;font-size:18px;background:${color(a.id + a.nome)}">${esc(a.nome[0])}</div>
+    <div><b style="font-size:17px">${esc(a.nome)}</b><div class="hint" style="margin:0">${esc(t('years', { n: a.eta }))} · ${esc(a.ruolo)} · ${esc(a.gruppo)}</div></div></div>
+    <p><b>${esc(t('character'))}:</b> ${esc(a.personalita)}<br><b>${esc(t('cares'))}:</b> ${esc(a.motivazione)}<br><b>${esc(t('opinion'))}:</b> ${a.posizione0.toFixed(2)} → ${a.posizione.toFixed(2)} · ${esc(t('influence', { n: a.influenza + '/10' }))}</p>
+    <h3>${esc(t('wrote', { n: posts.length }))}</h3>
+    <div>${posts.length ? posts.map(p => postHTML(p)).join('') : `<div class="hint">${esc(t('only_likes'))}</div>`}</div>
+    <h3 style="margin-top:14px">${esc(t('interview'))}</h3>
+    <div id="chat">${chat.map(c => `<div class="bubble q">${esc(c.q)}</div><div class="bubble a">${esc(c.a)}</div>`).join('')}</div>
+    <div class="row"><input id="q" placeholder="${esc(t('ask_ph'))}"><button class="btn small" id="b-ask">${esc(t('ask'))}</button></div>
+    <div class="row"><button class="btn sec" id="b-close">${esc(t('close'))}</button></div>`;
+  $('#sheet').classList.add('open');
+  $('#b-close').onclick = () => $('#sheet').classList.remove('open');
+  const ask = async () => {
+    const q = $('#q').value.trim(); if (!q) return;
+    $('#b-ask').disabled = true; $('#q').value = '';
+    $('#chat').insertAdjacentHTML('beforeend', `<div class="bubble q">${esc(q)}</div><div class="bubble a" id="pending">…</div>`);
+    try { const ans = await interview(a, q); (sim.chats[a.id] = sim.chats[a.id] || []).push({ q, a: ans }); $('#pending').outerHTML = `<div class="bubble a">${esc(ans)}</div>`; saveSim(); }
+    catch (e) { $('#pending').outerHTML = `<div class="bubble a">⚠️ ${esc(e.message)}</div>`; }
+    $('#b-ask').disabled = false;
+  };
+  $('#b-ask').onclick = ask;
+  $('#q').onkeydown = e => { if (e.key === 'Enter') ask(); };
+}
+
+function download(name, text, type) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+const slug = () => (sim.title || 'stormo').toLowerCase().replace(/[^a-z0-9а-яё]+/g, '-').replace(/^-|-$/g, '') || 'stormo';
+function reportMarkdown() { return `# ${sim.title}\n\n**${t('question_lbl')}:** ${sim.question}\n\n${sim.report || ''}\n\n---\n${t('generated', { a: sim.agents.length, r: sim.round })}\n`; }
+
+function updateEstimate() {
+  const n = +$('#f-agents').value, r = +$('#f-rounds').value;
+  $('#o-agents').textContent = n; $('#o-rounds').textContent = r;
+  const calls = Math.ceil(n / 15) + r * Math.ceil(n / 6) + 1;
+  $('#o-cost').textContent = isDemo() ? t('est_demo') : t('est', { c: calls, p: t(PRESETS[settings.provider].label) });
+}
+function fillSettings() {
+  const sel = $('#c-provider');
+  sel.innerHTML = Object.entries(PRESETS).map(([k, p]) => `<option value="${k}">${esc(t(p.label))}</option>`).join('');
+  sel.value = settings.provider;
+  const p = PRESETS[settings.provider];
+  $('#c-ui').value = settings.ui;
+  $('#c-base').value = settings.base || p.base; $('#c-model').value = settings.model || p.model; $('#c-key').value = settings.key;
+  $('#c-lang').innerHTML = SIM_LANGS.map(l => `<option>${l}</option>`).join(''); $('#c-lang').value = settings.lang;
+  $('#c-theme').value = settings.theme || '';
+  ['#c-base', '#c-model', '#c-key'].forEach(s => $(s).disabled = isDemo());
+  renderProxy();
+}
+function readSettings() {
+  settings.provider = $('#c-provider').value;
+  const p = PRESETS[settings.provider];
+  settings.base = $('#c-base').value.trim() === p.base ? '' : $('#c-base').value.trim();
+  settings.model = $('#c-model').value.trim() === p.model ? '' : $('#c-model').value.trim();
+  settings.key = $('#c-key').value.trim(); settings.lang = $('#c-lang').value; settings.theme = $('#c-theme').value;
+  if (proxyOK) settings.proxy = $('#c-proxy').checked;
+}
+function applyTheme() { if (settings.theme) document.documentElement.setAttribute('data-theme', settings.theme); else document.documentElement.removeAttribute('data-theme'); }
+
+/* =================== eventi =================== */
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => show(b.dataset.v));
+document.querySelectorAll('#langs button').forEach(b => b.onclick = () => setUi(b.dataset.l));
+$('#c-ui').onchange = () => setUi($('#c-ui').value);
+$('#f-agents').oninput = $('#f-rounds').oninput = updateEstimate;
+$('#b-file').onclick = () => $('#f-file').click();
+$('#f-file').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader(); r.onload = () => { $('#f-seed').value = String(r.result).slice(0, 20000); if (!$('#f-title').value) $('#f-title').value = f.name.replace(/\.[^.]+$/, ''); toast(t('loaded')); }; r.readAsText(f);
+};
+$('#b-example').onclick = () => { $('#f-title').value = t('ex_title'); $('#f-seed').value = t('ex_seed'); $('#f-question').value = t('ex_q'); $('#f-platform').value = 'p_local'; };
+$('#b-start').onclick = () => {
+  if (running) return toast(t('already'));
+  if ($('#f-seed').value.trim().length < 20) return toast(t('seed_short'));
+  sim = newSim(); pendingEvents = []; saveSim(); renderAll(); show('sim'); runSim();
+};
+$('#b-pause').onclick = () => {
+  if (!sim) return;
+  if (running) { paused = true; setStep(t('pausing'), null); }
+  else runSim();
+};
+$('#b-more').onclick = () => { if (!sim || running) return; sim.nRounds++; runSim(); };
+$('#b-event').onclick = () => {
+  const x = $('#f-event').value.trim(); if (!x) return toast(t('describe_ev'));
+  if (!sim) return toast(t('need_sim'));
+  pendingEvents.push(x); $('#f-event').value = '';
+  if (!running && sim.round >= sim.nRounds) { sim.nRounds++; runSim(); toast(t('ev_new')); }
+  else toast(t('ev_queued'));
+};
+$('#b-report').onclick = async () => {
+  if (!sim || !sim.agents.length) return toast(t('need_sim'));
+  $('#b-report').disabled = true; $('#report').innerHTML = `<div class="empty">${esc(t('writing'))}</div>`;
+  try { await genReport(); } catch (e) { toast(e.message); renderReport(); }
+  $('#b-report').disabled = false;
+};
+$('#b-share').onclick = async () => {
+  if (!sim || !sim.report) return toast(t('no_report'));
+  const text = reportMarkdown();
+  if (navigator.share) { try { await navigator.share({ title: sim.title, text }); } catch (e) {} }
+  else { try { await navigator.clipboard.writeText(text); toast(t('copied')); } catch (e) { download(slug() + '.md', text, 'text/markdown'); } }
+};
+$('#b-md').onclick = () => { if (!sim) return toast(t('need_sim')); download(slug() + '.md', reportMarkdown(), 'text/markdown'); };
+$('#b-json').onclick = () => { if (!sim) return toast(t('need_sim')); download(slug() + '.json', JSON.stringify(sim, null, 2), 'application/json'); };
+$('#history').onclick = e => {
+  const o = e.target.closest('[data-open]'), d = e.target.closest('[data-del]');
+  if (d) { if (!confirm(t('del_q'))) return; store.set('stormo.sims', store.get('stormo.sims', []).filter(s => s.id !== d.dataset.del)); if (sim && sim.id === d.dataset.del && !running) sim = null; renderAll(); return; }
+  if (o) { if (running) return toast(t('wait_run')); sim = store.get('stormo.sims', []).find(s => s.id === o.dataset.open); if (sim && !sim.lang) sim.lang = 'Italiano'; renderAll(); show(sim && sim.report ? 'report' : 'sim'); }
+};
+$('#agents').onclick = e => { const a = e.target.closest('.agent'); if (a) openAgent(a.dataset.id); };
+$('#sheet').onclick = e => { if (e.target.id === 'sheet') $('#sheet').classList.remove('open'); };
+$('#c-provider').onchange = () => { const k = $('#c-key').value; settings.provider = $('#c-provider').value; settings.base = ''; settings.model = ''; fillSettings(); $('#c-key').value = k; };
+$('#b-save').onclick = () => { readSettings(); saveSettings(); applyTheme(); updateEstimate(); toast(t('saved_ok')); };
+$('#b-test').onclick = async () => {
+  readSettings(); if (isDemo()) return toast(t('demo_nc'));
+  $('#b-test').disabled = true; toast(t('trying'));
+  try { const r = await llm('Reply with the single word OK.', 'Test', 20); toast(t('conn_ok') + ' ' + r.trim().slice(0, 20)); saveSettings(); }
+  catch (e) { toast(t('error_msg', { e: e.message })); }
+  $('#b-test').disabled = false;
+};
+
+/* =================== avvio =================== */
+sim = store.get('stormo.sims', [])[0] || null;
+if (sim) { if (!sim.lang) sim.lang = 'Italiano'; if (sim.status === 'running' || sim.status === 'in corso') sim.status = 'paused'; }
+applyTheme(); applyI18n(); detectProxy();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
